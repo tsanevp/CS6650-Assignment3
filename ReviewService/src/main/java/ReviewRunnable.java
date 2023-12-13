@@ -67,13 +67,9 @@ public class ReviewRunnable implements Runnable {
 
             } catch (SQLException e) {
                 e.printStackTrace();
-//                channel.basicReject(delivery.getEnvelope().getDeliveryTag(), true);
             }
-
-//            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         } catch (Exception e) {
             e.printStackTrace();
-//            channel.basicReject(delivery.getEnvelope().getDeliveryTag(), true);
         }
     }
 }

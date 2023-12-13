@@ -23,7 +23,7 @@ public class AlbumClient {
 
     public static void main(String[] args) throws InterruptedException {
         long start, end;
-        String currentPhase = "Loading Java Server Phase - 1 Servlet (t2.medium), 1 DB (db.t3.medium, 250 Connections)";
+        String currentPhase = "Loading Java Server Phase";
 
         // Define starting constants
         int threadGroupSize = Integer.parseInt(args[0]);
@@ -40,10 +40,7 @@ public class AlbumClient {
         totalThreadsLatch = new CountDownLatch(INITIAL_THREAD_COUNT);
 
         // Run initialization phase
-        start = System.currentTimeMillis();
         initializationPhase(servicePool, serverURL);
-        end = System.currentTimeMillis();
-//        printResults(1, INITIAL_THREAD_COUNT, INITIAL_CALLS_PER_THREAD, "Initialization Phase Results", start, end);
 
         // Redefine countdown latch for server loading
         totalThreadsLatch = new CountDownLatch(maxThreads);

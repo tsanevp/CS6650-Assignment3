@@ -1,5 +1,6 @@
 import Controller.AlbumController;
 import Service.MySQLService;
+import Service.S3ImageService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.zaxxer.hikari.HikariDataSource;
@@ -26,12 +27,15 @@ import java.util.regex.Pattern;
         maxRequestSize = 1024 * 1024 * 100)    // 100 MB
 public class AlbumsServlet extends HttpServlet {
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private S3ImageService s3ImageService;
+
     private MySQLService mySQLService;
     private HikariDataSource connectionPool;
     private AlbumController albumController;
 
     @Override
     public void init() {
+        this.s3ImageService = new S3ImageService();
         this.albumController = new AlbumController();
         this.mySQLService = new MySQLService();
         this.connectionPool = this.mySQLService.getConnectionPool();
@@ -87,6 +91,9 @@ public class AlbumsServlet extends HttpServlet {
             int rowsAffected = this.albumController.postToDatabase(connection, uuid, imageData, albumProfile);
 
             if (rowsAffected > 0) {
+                // Upload image to S3 cloud object storage
+                this.s3ImageService.uploadImage(image, uuid);
+
                 res.setStatus(HttpServletResponse.SC_OK);
                 res.getWriter().write(imageData);
             } else {
@@ -169,6 +176,12 @@ public class AlbumsServlet extends HttpServlet {
         return false;
     }
 
+    @Override
+    public void destroy() {
+        this.s3ImageService.shutDown();
+        this.mySQLService.close();
+    }
+
     /**
      * Enum constants that represent different possible endpoints
      */
@@ -180,10 +193,5 @@ public class AlbumsServlet extends HttpServlet {
         Endpoint(Pattern pattern) {
             this.pattern = pattern;
         }
-    }
-
-    @Override
-    public void destroy() {
-        mySQLService.close();
     }
 }
